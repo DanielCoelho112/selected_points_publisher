@@ -38,6 +38,7 @@
 #include <ros/ros.h>
 #include <ros/time.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <std_msgs/Int32MultiArray.h>
 #include <QVariant>
 #include <visualization_msgs/Marker.h>
 
@@ -64,34 +65,21 @@ void SelectedPointsPublisher::updateTopic()
 int SelectedPointsPublisher::processKeyEvent(QKeyEvent* event, rviz::RenderPanel* panel)
 {
   if (event->type() == QKeyEvent::KeyPress)
-  {
-    if (event->key() == 'c' || event->key() == 'C')
-    {
-      ROS_INFO_STREAM_NAMED("SelectedPointsPublisher::processKeyEvent", "Cleaning previous selection (selected area "
-                                                                        "and points).");
-      rviz::SelectionManager* selection_manager = context_->getSelectionManager();
-      rviz::M_Picked selection = selection_manager->getSelection();
-      selection_manager->removeSelection(selection);
-      visualization_msgs::Marker marker;
-      // Set the frame ID and timestamp.  See the TF tutorials for information on these.
-      marker.header.frame_id = context_->getFixedFrame().toStdString().c_str();
-      marker.header.stamp = ros::Time::now();
-      marker.ns = "basic_shapes";
-      marker.id = 0;
-      marker.type = visualization_msgs::Marker::CUBE;
-      marker.action = visualization_msgs::Marker::DELETE;
-      marker.lifetime = ros::Duration();
-      num_selected_points_ = 0;
-    }
-    else if (event->key() == 'p' || event->key() == 'P')
+
+    // Todo : add letter 'c' to unselect one point
+
+
+    if (event->key() == 'p' || event->key() == 'P')
     {
       ROS_INFO_STREAM_NAMED("SelectedPointsPublisher.updateTopic",
                             "Publishing " << num_selected_points_ << " selected points to topic "
                                           << node_handle_.resolveName(rviz_cloud_topic_));
       rviz_selected_publisher_.publish(selected_points_);
     }
+
+  return 0;
   }
-}
+
 
 int SelectedPointsPublisher::processMouseEvent(rviz::ViewportMouseEvent& event)
 {
@@ -171,21 +159,10 @@ int SelectedPointsPublisher::processSelectedArea()
     *(float*)data_pointer = point_data.z;
     data_pointer += 4;
 
-    // Search for the intensity value
-    for (int j = 1; j < child->numChildren(); j++)
-    {
-      rviz::Property* grandchild = child->childAt(j);
-      QString nameOfChild = grandchild->getName();
-      QString nameOfIntensity("intensity");
 
-      if (nameOfChild.contains(nameOfIntensity))
-      {
-        rviz::FloatProperty* floatchild = (rviz::FloatProperty*)grandchild;
-        float intensity = floatchild->getValue().toFloat();
-        *(float*)data_pointer = intensity;
-        break;
-      }
-    }
+    ROS_INFO_STREAM_NAMED("SelectedPointsPublisher._processSelectedAreaAndFindPoints",
+                        "Index: " << child->childAt(0));
+
     data_pointer += 4;
     i++;
   }
