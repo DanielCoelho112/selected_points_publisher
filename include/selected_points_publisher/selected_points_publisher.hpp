@@ -54,11 +54,16 @@ protected:
   int processSelectedArea();
   ros::NodeHandle node_handle_;
   ros::Publisher rviz_selected_publisher_;
+  ros::Publisher rviz_selected_border_publisher_;
+  ros::Publisher rviz_selected_remove_publisher_;
   ros::Subscriber pointcloud_subscriber_;
 
   std::string tf_frame_;
   std::string rviz_cloud_topic_;
+  std::string rviz_cloud_border_topic_;
+  std::string rviz_cloud_remove_topic_;
   std::string subscribed_cloud_topic_;
+  
 
   sensor_msgs::PointCloud2 selected_points_;
 

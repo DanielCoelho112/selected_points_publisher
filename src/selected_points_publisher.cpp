@@ -57,8 +57,12 @@ void SelectedPointsPublisher::updateTopic()
 {
   node_handle_.param("frame_id", tf_frame_, std::string("/base_link"));
   rviz_cloud_topic_ = std::string("/rviz_selected_points");
+  rviz_cloud_border_topic_ = std::string("/rviz_selected_border_points");
+  rviz_cloud_remove_topic_ = std::string("/rviz_selected_remove_points");
 
   rviz_selected_publisher_ = node_handle_.advertise<sensor_msgs::PointCloud2>(rviz_cloud_topic_.c_str(), 1);
+  rviz_selected_border_publisher_ = node_handle_.advertise<sensor_msgs::PointCloud2>(rviz_cloud_border_topic_.c_str(), 1);
+  rviz_selected_remove_publisher_ = node_handle_.advertise<sensor_msgs::PointCloud2>(rviz_cloud_remove_topic_.c_str(), 1);
   num_selected_points_ = 0;
 }
 
@@ -76,6 +80,23 @@ int SelectedPointsPublisher::processKeyEvent(QKeyEvent* event, rviz::RenderPanel
                                           << node_handle_.resolveName(rviz_cloud_topic_));
       rviz_selected_publisher_.publish(selected_points_);
     }
+
+    if (event->key() == 'b' || event->key() == 'B')
+    {
+      ROS_INFO_STREAM_NAMED("SelectedPointsPublisher.updateTopic",
+                            "Publishing " << num_selected_points_ << " selected points to topic "
+                                          << node_handle_.resolveName(rviz_cloud_border_topic_));
+      rviz_selected_border_publisher_.publish(selected_points_);
+    }
+
+    if (event->key() == 'r' || event->key() == 'R')
+    {
+      ROS_INFO_STREAM_NAMED("SelectedPointsPublisher.updateTopic",
+                            "Publishing " << num_selected_points_ << " selected points to topic "
+                                          << node_handle_.resolveName(rviz_cloud_remove_topic_));
+      rviz_selected_remove_publisher_.publish(selected_points_);
+    }
+
 
   return 0;
   }
@@ -134,7 +155,7 @@ int SelectedPointsPublisher::processSelectedArea()
   selected_points_.fields[2].datatype = sensor_msgs::PointField::FLOAT32;
   selected_points_.fields[2].count = 1;
 
-  selected_points_.fields[3].name = "intensity";
+  selected_points_.fields[3].name = "idx";
   selected_points_.fields[3].offset = 12;
   selected_points_.fields[3].datatype = sensor_msgs::PointField::FLOAT32;
   selected_points_.fields[3].count = 1;
@@ -159,10 +180,21 @@ int SelectedPointsPublisher::processSelectedArea()
     *(float*)data_pointer = point_data.z;
     data_pointer += 4;
 
+    // Search for the idx value
+    for (int j = 1; j < child->numChildren(); j++)
+    {
+      rviz::Property* grandchild = child->childAt(j);
+      QString nameOfChild = grandchild->getName();
+      QString idxValue("idx");
 
-    ROS_INFO_STREAM_NAMED("SelectedPointsPublisher._processSelectedAreaAndFindPoints",
-                        "Index: " << child->childAt(0));
-
+      if (nameOfChild.contains(idxValue))
+      {
+        rviz::FloatProperty* floatchild = (rviz::FloatProperty*)grandchild;
+        float idx = floatchild->getValue().toFloat();
+        *(float*)data_pointer = idx;
+        break;
+      }
+    }
     data_pointer += 4;
     i++;
   }
@@ -175,6 +207,5 @@ int SelectedPointsPublisher::processSelectedArea()
   return 0;
 }
 }  // namespace rviz_plugin_selected_points_publisher
-
 #include <pluginlib/class_list_macros.h>
 PLUGINLIB_EXPORT_CLASS(rviz_plugin_selected_points_publisher::SelectedPointsPublisher, rviz::Tool)
