@@ -8,9 +8,11 @@
       Holding the Shift key will allow adding to the current selection.
       Holding the Ctrl key will allow subtraction from the current selection.
       The following keys are also available:
-      'S' - Toggle with RViz interaction
-      'C' - Clear current selection
-      'P' - Publish selected points to /rviz_selected_points
+
+      'p' - Publish selected points to /rviz_selected_points
+      'b' - Publish selected points to /rviz_selected_border_points
+      'r' - Publish selected points to /rviz_selected_remove_points
+      'c' - Publish selected points to /rviz_selected_clear_all_points
     </description>
   </class>
 </library>

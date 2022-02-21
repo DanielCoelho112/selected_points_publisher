@@ -8,8 +8,7 @@ Build as per and normal ROS package. The plugin can be accessed after install by
 ## Usage
 Drag with the left button to select objects in the 3D scene.
 * Hold the Alt key to change viewpoint as in the Move tool
-* Hold the Shift key to add more poiints to the current selection
-* Hold the Ctrl key to remove points from the current selection
+* Hold the Shift key to add more points to the current selection
 
 The following keys are also available:
 * 'S' - Toggle with RViz interaction
